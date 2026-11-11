@@ -16,8 +16,6 @@ Config example::
           pretty: true
 """
 
-from __future__ import annotations
-
 import json as _json
 from pathlib import Path, PurePosixPath
 
