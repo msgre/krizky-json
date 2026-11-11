@@ -6,14 +6,12 @@ import json
 import sqlite3
 from pathlib import Path
 
-import pytest
-
 from krizky.site import build_site
-
 
 # ---------------------------------------------------------------------------
 # Helpers (zkopírované z test_site.py)
 # ---------------------------------------------------------------------------
+
 
 def _make_db(db_path: Path, records: list[dict], table: str = "data") -> None:
     cols = list(records[0].keys())
@@ -53,16 +51,21 @@ def _setup(tmp_path: Path, records: list[dict], pages: dict) -> dict:
 # Jednoduché stránky
 # ---------------------------------------------------------------------------
 
+
 def test_simple_page_json_all_fields(tmp_path: Path) -> None:
     """simple page s json: fields: '*' exportuje všechny záznamy."""
     records = [{"slug": "a", "nazev": "První"}, {"slug": "b", "nazev": "Druhý"}]
-    config = _setup(tmp_path, records, {
-        "mista": {
-            "path": "/mista.html",
-            "template": "page.html",
-            "json": {"fields": "*"},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "mista": {
+                "path": "/mista.html",
+                "template": "page.html",
+                "json": {"fields": "*"},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     out = json.loads((tmp_path / "output" / "jsons" / "mista.json").read_text(encoding="utf-8"))
@@ -74,13 +77,17 @@ def test_simple_page_json_all_fields(tmp_path: Path) -> None:
 def test_simple_page_json_field_whitelist(tmp_path: Path) -> None:
     """fields: [...] omezí exportované atributy."""
     records = [{"slug": "a", "nazev": "První", "interni": "tajne"}]
-    config = _setup(tmp_path, records, {
-        "mista": {
-            "path": "/mista.html",
-            "template": "page.html",
-            "json": {"fields": ["slug", "nazev"]},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "mista": {
+                "path": "/mista.html",
+                "template": "page.html",
+                "json": {"fields": ["slug", "nazev"]},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     out = json.loads((tmp_path / "output" / "jsons" / "mista.json").read_text(encoding="utf-8"))
@@ -91,13 +98,17 @@ def test_simple_page_json_field_whitelist(tmp_path: Path) -> None:
 def test_simple_page_json_exclude(tmp_path: Path) -> None:
     """exclude: [...] odstraní uvedená pole ze všech záznamů."""
     records = [{"slug": "a", "nazev": "První", "interni": "tajne"}]
-    config = _setup(tmp_path, records, {
-        "mista": {
-            "path": "/mista.html",
-            "template": "page.html",
-            "json": {"fields": "*", "exclude": ["interni"]},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "mista": {
+                "path": "/mista.html",
+                "template": "page.html",
+                "json": {"fields": "*", "exclude": ["interni"]},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     out = json.loads((tmp_path / "output" / "jsons" / "mista.json").read_text(encoding="utf-8"))
@@ -108,13 +119,17 @@ def test_simple_page_json_exclude(tmp_path: Path) -> None:
 def test_simple_page_json_pretty(tmp_path: Path) -> None:
     """pretty: true generuje odsazený JSON."""
     records = [{"slug": "a"}]
-    config = _setup(tmp_path, records, {
-        "mista": {
-            "path": "/mista.html",
-            "template": "page.html",
-            "json": {"fields": "*", "pretty": True},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "mista": {
+                "path": "/mista.html",
+                "template": "page.html",
+                "json": {"fields": "*", "pretty": True},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     raw = (tmp_path / "output" / "jsons" / "mista.json").read_text(encoding="utf-8")
@@ -124,9 +139,13 @@ def test_simple_page_json_pretty(tmp_path: Path) -> None:
 def test_simple_page_no_json_without_key(tmp_path: Path) -> None:
     """Bez json: klíče se JSON soubor negeneruje."""
     records = [{"slug": "a"}]
-    config = _setup(tmp_path, records, {
-        "mista": {"path": "/mista.html", "template": "page.html"},
-    })
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "mista": {"path": "/mista.html", "template": "page.html"},
+        },
+    )
     build_site(config, config_dir=tmp_path)
 
     assert not (tmp_path / "output" / "jsons" / "mista.json").exists()
@@ -135,13 +154,17 @@ def test_simple_page_no_json_without_key(tmp_path: Path) -> None:
 def test_simple_page_json_ignores_pagination(tmp_path: Path) -> None:
     """JSON exportuje všechny záznamy i při stránkování HTML."""
     records = [{"slug": str(i), "nazev": f"Item {i}"} for i in range(5)]
-    config = _setup(tmp_path, records, {
-        "mista": {
-            "path": "/mista.html",
-            "template": "page.html",
-            "json": {"fields": "*"},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "mista": {
+                "path": "/mista.html",
+                "template": "page.html",
+                "json": {"fields": "*"},
+            },
         },
-    })
+    )
     config["site"]["paginate_by"] = 2
     build_site(config, config_dir=tmp_path)
 
@@ -153,17 +176,22 @@ def test_simple_page_json_ignores_pagination(tmp_path: Path) -> None:
 # Detail stránky
 # ---------------------------------------------------------------------------
 
+
 def test_detail_page_json_per_record(tmp_path: Path) -> None:
     """Detail stránka generuje jeden JSON objekt per záznam."""
     records = [{"slug": "a", "nazev": "První"}, {"slug": "b", "nazev": "Druhý"}]
-    config = _setup(tmp_path, records, {
-        "detail": {
-            "detail": True,
-            "path": "/{{ record.slug }}.html",
-            "template": "page.html",
-            "json": {"fields": "*"},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "detail": {
+                "detail": True,
+                "path": "/{{ record.slug }}.html",
+                "template": "page.html",
+                "json": {"fields": "*"},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     out_a = json.loads((tmp_path / "output" / "jsons" / "a.json").read_text(encoding="utf-8"))
@@ -177,14 +205,18 @@ def test_detail_page_json_per_record(tmp_path: Path) -> None:
 def test_detail_page_json_field_filter(tmp_path: Path) -> None:
     """Detail JSON respektuje fields whitelist."""
     records = [{"slug": "a", "nazev": "První", "tajne": "x"}]
-    config = _setup(tmp_path, records, {
-        "detail": {
-            "detail": True,
-            "path": "/{{ record.slug }}.html",
-            "template": "page.html",
-            "json": {"fields": ["slug", "nazev"]},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "detail": {
+                "detail": True,
+                "path": "/{{ record.slug }}.html",
+                "template": "page.html",
+                "json": {"fields": ["slug", "nazev"]},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     out = json.loads((tmp_path / "output" / "jsons" / "a.json").read_text(encoding="utf-8"))
@@ -195,6 +227,7 @@ def test_detail_page_json_field_filter(tmp_path: Path) -> None:
 # Category stránky
 # ---------------------------------------------------------------------------
 
+
 def test_category_page_json_per_category(tmp_path: Path) -> None:
     """Category stránka generuje jeden JSON per kategorii."""
     records = [
@@ -202,18 +235,24 @@ def test_category_page_json_per_category(tmp_path: Path) -> None:
         {"slug": "b", "typ": "kriz", "typ_slug": "kriz"},
         {"slug": "c", "typ": "socha", "typ_slug": "socha"},
     ]
-    config = _setup(tmp_path, records, {
-        "typy": {
-            "category": "typ",
-            "path": "/{{ category.slug }}.html",
-            "template": "page.html",
-            "json": {"fields": ["slug", "typ"]},
+    config = _setup(
+        tmp_path,
+        records,
+        {
+            "typy": {
+                "category": "typ",
+                "path": "/{{ category.slug }}.html",
+                "template": "page.html",
+                "json": {"fields": ["slug", "typ"]},
+            },
         },
-    })
+    )
     build_site(config, config_dir=tmp_path)
 
     out_kriz = json.loads((tmp_path / "output" / "jsons" / "kriz.json").read_text(encoding="utf-8"))
-    out_socha = json.loads((tmp_path / "output" / "jsons" / "socha.json").read_text(encoding="utf-8"))
+    out_socha = json.loads(
+        (tmp_path / "output" / "jsons" / "socha.json").read_text(encoding="utf-8")
+    )
 
     assert len(out_kriz) == 2
     assert len(out_socha) == 1

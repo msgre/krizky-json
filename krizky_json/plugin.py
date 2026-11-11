@@ -23,10 +23,10 @@ from pathlib import Path, PurePosixPath
 
 from krizky.hooks import hookimpl
 
-
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _filter_record(record: dict, fields, exclude: list[str]) -> dict:
     if isinstance(fields, list):
@@ -91,6 +91,7 @@ def _write_json_record(
 # ---------------------------------------------------------------------------
 # Plugin
 # ---------------------------------------------------------------------------
+
 
 class JsonExportPlugin:
     """Writes JSON sidecar files for pages that have a 'json:' config section.
